@@ -33,7 +33,7 @@ class BackofficeAgent:
                 status="completed",
                 result=result.model_dump(),
             )
-        except (ValueError, KeyError) as e:
+        except (ValueError, KeyError, IndexError) as e:
             return TaskResponse(
                 id=request.id,
                 status="failed",
