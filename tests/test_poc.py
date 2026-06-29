@@ -26,3 +26,16 @@ def test_repository_date_called():
     repo = DocumentRepository()
     doc = repo.get_by_id("Fake_id")
     assert doc.date_called == date.today().isoformat()
+
+
+# ── Tool Registry ─────────────────────────────────────────────────────────────
+
+def test_registry_get_tool():
+    from backoffice_mcp.tool_registry import get_tool
+    tool = get_tool("get_document")
+    assert callable(tool)
+
+
+def test_registry_missing_tool():
+    from backoffice_mcp.tool_registry import get_tool
+    assert get_tool("nonexistent") is None
