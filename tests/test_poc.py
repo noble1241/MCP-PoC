@@ -55,3 +55,51 @@ def test_tool_unknown_id_raises():
     from backoffice_mcp.tools import get_document
     with pytest.raises(ValueError, match="not found"):
         get_document("bad_id")
+
+
+# ── A2A Endpoints ─────────────────────────────────────────────────────────────
+
+from fastapi.testclient import TestClient
+
+
+@pytest.fixture(scope="module")
+def client():
+    from main import app
+    return TestClient(app)
+
+
+def test_a2a_agent_card(client):
+    response = client.get("/.well-known/agent.json")
+    assert response.status_code == 200
+    data = response.json()
+    assert data["name"] == "Backoffice Agent"
+
+
+def test_a2a_task_success(client):
+    response = client.post("/tasks/send", json={
+        "id": "task-1",
+        "message": {"parts": [{"text": "Fake_id"}]},
+    })
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "completed"
+    assert data["result"]["policy_name"] == "Premium Health Coverage"
+    assert data["result"]["client_name"] == "Acme Corp"
+    assert data["result"]["policy_id"] == "POL-001"
+    assert "date_called" in data["result"]
+
+
+def test_a2a_task_unknown_id(client):
+    response = client.post("/tasks/send", json={
+        "id": "task-2",
+        "message": {"parts": [{"text": "bad_id"}]},
+    })
+    assert response.status_code == 200
+    data = response.json()
+    assert data["status"] == "failed"
+    assert "not found" in data["error"]
+
+
+def test_a2a_missing_message(client):
+    response = client.post("/tasks/send", json={"id": "task-3"})
+    assert response.status_code == 400
