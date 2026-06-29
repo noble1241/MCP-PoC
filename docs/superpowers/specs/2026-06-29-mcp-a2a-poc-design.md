@@ -56,6 +56,8 @@ MCP-PoC/
 │   └── tools.py
 ├── repository/
 │   └── policy_repository.py
+├── tests/
+│   └── test_poc.py
 ├── docs/
 │   └── superpowers/specs/
 │       └── 2026-06-29-mcp-a2a-poc-design.md
@@ -172,6 +174,28 @@ Seeded in `DocumentRepository._store`:
 
 ---
 
+## Tests (`tests/test_poc.py`)
+
+Single pytest file covering each layer in isolation plus the A2A endpoint end-to-end. Uses FastAPI's `TestClient` for HTTP tests — no running server needed.
+
+**Test cases:**
+
+| Test | What it checks |
+|------|----------------|
+| `test_repository_known_id` | `get_by_id("Fake_id")` returns a `PolicyDocument` with correct fields |
+| `test_repository_unknown_id` | `get_by_id("bad_id")` returns `None` |
+| `test_repository_date_called` | `date_called` matches today's date |
+| `test_tool_get_document` | `get_document("Fake_id")` returns `PolicyDocument` |
+| `test_tool_unknown_id_raises` | `get_document("bad_id")` raises `ValueError` |
+| `test_registry_get_tool` | `get_tool("get_document")` returns a callable |
+| `test_registry_missing_tool` | `get_tool("nonexistent")` returns `None` |
+| `test_a2a_agent_card` | `GET /.well-known/agent.json` returns 200 with name field |
+| `test_a2a_task_success` | `POST /tasks/send` with `"Fake_id"` returns `status: completed` and full result |
+| `test_a2a_task_unknown_id` | `POST /tasks/send` with `"bad_id"` returns `status: failed` |
+| `test_a2a_missing_message` | `POST /tasks/send` with malformed body returns HTTP 400 |
+
+---
+
 ## Dependencies (`requirements.txt`)
 
 ```
@@ -179,7 +203,11 @@ fastapi
 uvicorn
 mcp[cli]
 pydantic
+pytest
+httpx
 ```
+
+(`httpx` is required by FastAPI's `TestClient`.)
 
 ---
 
@@ -198,3 +226,4 @@ pydantic
 3. `POST /tasks/send` with `"Fake_id"` returns full policy data
 4. `POST /tasks/send` with an unknown ID returns `status: failed`
 5. Claude Code can connect to `/mcp` and invoke `get_document` directly
+6. `pytest tests/test_poc.py` passes all 11 tests
