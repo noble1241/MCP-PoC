@@ -3,4 +3,4 @@ uvicorn
 mcp[cli]
 pydantic
 pytest
-httpx
+httpx2
