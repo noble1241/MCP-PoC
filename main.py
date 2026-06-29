@@ -14,6 +14,11 @@ AGENT_CARD = {
 }
 
 
+@app.get("/health")
+async def health():
+    return JSONResponse({"status": "ok"})
+
+
 @app.get("/.well-known/agent.json")
 async def agent_card():
     return JSONResponse(AGENT_CARD)
